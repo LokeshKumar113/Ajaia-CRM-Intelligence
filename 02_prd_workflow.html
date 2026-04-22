@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ajaia CRM Intelligence — Product Requirements Document</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap');
+
+  :root {
+    --ink: #0f0e0c;
+    --bg: #f7f4ef;
+    --accent: #d4522a;
+    --accent2: #2a6fd4;
+    --muted: #7a7468;
+    --border: #ddd9d0;
+    --highlight: #fff8e7;
+    --green: #1a7a4a;
+    --amber: #b85c00;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  .cover {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 80px 60px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    border: 2px solid rgba(212,82,42,0.3);
+  }
+
+  .cover::after {
+    content: '';
+    position: absolute;
+    bottom: 20px; right: 60px;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    border: 1px solid rgba(212,82,42,0.2);
+  }
+
+  .cover-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+
+  .cover h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 52px;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    max-width: 600px;
+  }
+
+  .cover h1 em {
+    color: var(--accent);
+    font-style: italic;
+  }
+
+  .cover-meta {
+    display: flex;
+    gap: 40px;
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 1px solid rgba(247,244,239,0.15);
+  }
+
+  .cover-meta-item label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .cover-meta-item span {
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .doc {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 60px 40px;
+  }
+
+  .section {
+    margin-bottom: 64px;
+  }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+
+  h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 32px;
+    line-height: 1.2;
+    margin-bottom: 24px;
+    color: var(--ink);
+  }
+
+  h3 {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+    margin-top: 32px;
+  }
+
+  p {
+    margin-bottom: 16px;
+    color: #2a2824;
+    max-width: 680px;
+  }
+
+  .callout {
+    background: var(--highlight);
+    border-left: 3px solid var(--accent);
+    padding: 16px 20px;
+    margin: 24px 0;
+    border-radius: 0 6px 6px 0;
+  }
+
+  .callout p { margin: 0; font-style: italic; }
+
+  /* Workflow diagram */
+  .flow-diagram {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 32px 0;
+  }
+
+  .flow-row {
+    display: flex;
+    align-items: stretch;
+    gap: 2px;
+  }
+
+  .flow-node {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    flex: 1;
+  }
+
+  .flow-node.source {
+    background: #f0f4ff;
+    border-color: #bcd0ff;
+  }
+
+  .flow-node.ai-layer {
+    background: #fff3ee;
+    border-color: #ffcab5;
+    border-width: 2px;
+  }
+
+  .flow-node.human {
+    background: #f0fff6;
+    border-color: #b0e8c8;
+  }
+
+  .flow-node.output {
+    background: #fdfaff;
+    border-color: #d8c8f0;
+  }
+
+  .flow-node-title {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .source .flow-node-title { color: var(--accent2); }
+  .ai-layer .flow-node-title { color: var(--accent); }
+  .human .flow-node-title { color: var(--green); }
+  .output .flow-node-title { color: #7244c8; }
+
+  .flow-node ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .flow-node ul li {
+    font-size: 13px;
+    color: #444;
+    padding: 2px 0;
+    padding-left: 14px;
+    position: relative;
+  }
+
+  .flow-node ul li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--muted);
+    font-size: 11px;
+  }
+
+  .flow-arrow {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--muted);
+    font-size: 22px;
+    padding: 4px 0;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 14px;
+  }
+
+  th {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .tag-auto { background: #d4f0e0; color: #1a5c34; }
+  .tag-human { background: #fde8da; color: #8c3010; }
+  .tag-p0 { background: #1a1a1a; color: white; }
+  .tag-p1 { background: #555; color: white; }
+  .tag-p2 { background: #999; color: white; }
+
+  .check { color: var(--green); font-weight: 700; }
+  .cross { color: var(--muted); }
+
+  /* Stage flow */
+  .stages {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 24px 0;
+    overflow-x: auto;
+  }
+
+  .stage {
+    background: white;
+    border: 1.5px solid var(--border);
+    padding: 12px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    position: relative;
+  }
+
+  .stage:first-child { border-radius: 6px 0 0 6px; }
+  .stage:last-child { border-radius: 0 6px 6px 0; }
+
+  .stage.active {
+    background: var(--ink);
+    color: white;
+    border-color: var(--ink);
+  }
+
+  .stage-arrow {
+    color: var(--muted);
+    font-size: 18px;
+    flex-shrink: 0;
+    padding: 0 4px;
+  }
+
+  /* Success metrics */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin: 24px 0;
+  }
+
+  .metric-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+  }
+
+  .metric-card .metric-value {
+    font-family: 'DM Serif Display', serif;
+    font-size: 36px;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .metric-card .metric-label {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .footer {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 30px 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-left { font-family: 'DM Serif Display', serif; font-size: 20px; }
+  .footer-right { font-size: 12px; color: var(--muted); }
+
+  hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 40px 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="cover-label">Product Requirements Document · V1.0</div>
+  <h1>Ajaia <em>CRM Intelligence</em><br>Workflow</h1>
+  <p style="color: rgba(247,244,239,0.7); max-width: 480px; font-size: 16px; margin-top: 16px;">
+    An AI-powered relationship management layer that tracks client conversations, surfaces re-engagement signals, and drafts follow-ups — without replacing human judgment.
+  </p>
+  <div class="cover-meta">
+    <div class="cover-meta-item"><label>Document Type</label><span>PRD + Workflow Spec</span></div>
+    <div class="cover-meta-item"><label>Version</label><span>1.0 — Scoped for V1 Build</span></div>
+    <div class="cover-meta-item"><label>Status</label><span>Draft</span></div>
+    <div class="cover-meta-item"><label>Author</label><span>Fellow Candidate</span></div>
+  </div>
+</div>
+
+<div class="doc">
+
+  <!-- PROBLEM -->
+  <div class="section">
+    <div class="section-label">Section 01</div>
+    <h2>Problem & User</h2>
+
+    <p>Account managers at Ajaia manage 20–80 client and prospect relationships simultaneously. Today, critical relationship context — commitments made, conversation tone, last contact dates — lives across email threads, personal notes, and memory. There is no single source of truth.</p>
+
+    <div class="callout">
+      <p>"We discover a relationship has gone cold only after it matters. By then, re-engagement is awkward and the opportunity is often lost."</p>
+    </div>
+
+    <h3>Core Pain Points</h3>
+    <table>
+      <thead><tr><th>Pain</th><th>Current Behavior</th><th>Cost</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Fragmented context</strong></td><td>Manually scanning email threads before calls</td><td>15–30 min per account review</td></tr>
+        <tr><td><strong>Passive reminders</strong></td><td>Calendar nudges fire on schedule, not on signal</td><td>Irrelevant interruptions; missed actual urgency</td></tr>
+        <tr><td><strong>Stage opacity</strong></td><td>Pipeline status reconstructed manually each review</td><td>Stale data; surprised by stalled deals</td></tr>
+        <tr><td><strong>Reactive re-engagement</strong></td><td>Cold relationships discovered too late</td><td>Damaged trust; lost opportunities</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- INPUTS / OUTPUTS -->
+  <div class="section">
+    <div class="section-label">Section 02</div>
+    <h2>Inputs & Outputs</h2>
+
+    <h3>Data Inputs (V1)</h3>
+    <table>
+      <thead><tr><th>Source</th><th>Connection Method</th><th>What It Provides</th></tr></thead>
+      <tbody>
+        <tr><td>Gmail / Outlook</td><td>OAuth API</td><td>Thread history, timestamps, participants, tone signals</td></tr>
+        <tr><td>Google Calendar</td><td>OAuth API</td><td>Meeting cadence, scheduled events, last-met date</td></tr>
+        <tr><td>Manual notes</td><td>In-app text entry</td><td>Context AI can't infer; relationship nuances</td></tr>
+        <tr><td>User-defined metadata</td><td>Setup form</td><td>Account stage, priority tier, owner assignment</td></tr>
+      </tbody>
+    </table>
+
+    <h3>System Outputs (V1)</h3>
+    <table>
+      <thead><tr><th>Output</th><th>Trigger</th><th>Format</th></tr></thead>
+      <tbody>
+        <tr><td>Account summary card</td><td>On load / refresh</td><td>Last contact · Stage · AI summary · Suggested next action</td></tr>
+        <tr><td>Re-engagement alert</td><td>Days-since-contact threshold exceeded</td><td>Prioritized queue + AI-drafted message</td></tr>
+        <tr><td>Pipeline health digest</td><td>Weekly (Monday morning)</td><td>Email/Slack: accounts by health status</td></tr>
+        <tr><td>Meeting context brief</td><td>On-demand</td><td>1-paragraph relationship snapshot for pre-call prep</td></tr>
+        <tr><td>Stage change suggestion</td><td>AI detects advancement signals</td><td>Banner with one-click confirm or dismiss</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- WORKFLOW -->
+  <div class="section">
+    <div class="section-label">Section 03</div>
+    <h2>End-to-End Workflow</h2>
+
+    <div class="flow-diagram">
+
+      <div class="flow-row">
+        <div class="flow-node source">
+          <div class="flow-node-title">📨 Data Sources</div>
+          <ul>
+            <li>Gmail threads (OAuth)</li>
+            <li>Google Calendar events</li>
+            <li>Manual notes (in-app)</li>
+            <li>Account metadata</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="flow-arrow">↓</div>
+
+      <div class="flow-row">
+        <div class="flow-node ai-layer">
+          <div class="flow-node-title">🤖 AI Processing Layer — Automated</div>
+          <ul>
+            <li>Extract thread summaries & key commitments</li>
+            <li>Detect tone signals (warm / neutral / cooling)</li>
+            <li>Infer account stage from conversation content</li>
+            <li>Calculate days-since-contact & engagement velocity</li>
+            <li>Draft personalized follow-up message</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="flow-arrow">↓</div>
+
+      <div class="flow-row">
+        <div class="flow-node" style="background:#f8f8fc; border-color:#c8c8e8;">
+          <div class="flow-node-title" style="color:#444;">🗄️ Account Intelligence Store</div>
+          <ul>
+            <li>Structured record per account (updated on each ingestion cycle)</li>
+            <li>Fields: summary · stage · last contact · sentiment · next action · thread refs</li>
+            <li>Immutable history log for full audit trail</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="flow-arrow">↓</div>
+
+      <div class="flow-row">
+        <div class="flow-node output" style="flex: 1">
+          <div class="flow-node-title">📊 Dashboard</div>
+          <ul>
+            <li>Account list by health/priority</li>
+            <li>Detail card per account</li>
+            <li>Alert feed (inline)</li>
+          </ul>
+        </div>
+        <div style="width: 12px; flex-shrink: 0;"></div>
+        <div class="flow-node output" style="flex: 1">
+          <div class="flow-node-title">🔔 Alert & Digest Engine</div>
+          <ul>
+            <li>Re-engagement queue</li>
+            <li>Weekly pipeline digest</li>
+            <li>Slack/email notifications</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="flow-arrow">↓</div>
+
+      <div class="flow-row">
+        <div class="flow-node human">
+          <div class="flow-node-title">👤 Human Review & Action — Always Required</div>
+          <ul>
+            <li>Review AI-drafted messages before sending</li>
+            <li>Confirm or reject suggested stage changes</li>
+            <li>Dismiss or snooze alerts</li>
+            <li>Add manual context notes</li>
+            <li><strong>AI never sends. Humans always send.</strong></li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+
+    <h3>Automation vs. Human Decision Matrix</h3>
+    <table>
+      <thead><tr><th>Task</th><th>Automated</th><th>Human-Gated</th><th>Rationale</th></tr></thead>
+      <tbody>
+        <tr><td>Ingest email threads</td><td><span class="tag tag-auto">Auto</span></td><td></td><td>Purely mechanical data retrieval</td></tr>
+        <tr><td>Summarize conversation</td><td><span class="tag tag-auto">Auto</span></td><td></td><td>AI reads, never writes to record without review</td></tr>
+        <tr><td>Detect re-engagement signals</td><td><span class="tag tag-auto">Auto</span></td><td></td><td>Rule + AI; human confirms via action</td></tr>
+        <tr><td>Draft follow-up message</td><td><span class="tag tag-auto">Auto</span></td><td><span class="tag tag-human">Human edits</span></td><td>Authenticity — tone must be owner's voice</td></tr>
+        <tr><td>Stage change suggestion</td><td><span class="tag tag-auto">Suggest</span></td><td><span class="tag tag-human">Human confirms</span></td><td>Stage has downstream implications</td></tr>
+        <tr><td>Send message</td><td></td><td><span class="tag tag-human">Human only</span></td><td>Relationship risk; non-negotiable human gate</td></tr>
+        <tr><td>Log notes</td><td></td><td><span class="tag tag-human">Human only</span></td><td>Context nuance only owner knows</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ACCOUNT STAGES -->
+  <div class="section">
+    <div class="section-label">Section 04</div>
+    <h2>Account Stage Model</h2>
+
+    <div class="stages">
+      <div class="stage">① Prospect</div>
+      <div class="stage-arrow">→</div>
+      <div class="stage">② Qualified</div>
+      <div class="stage-arrow">→</div>
+      <div class="stage active">③ Proposal</div>
+      <div class="stage-arrow">→</div>
+      <div class="stage">④ Contracting</div>
+      <div class="stage-arrow">→</div>
+      <div class="stage">⑤ Active Client</div>
+    </div>
+
+    <p>AI suggests stage advancement based on email signals (e.g., request for proposal language, pricing discussion detected, legal review keywords). Users confirm or dismiss. Stage is always human-owned.</p>
+  </div>
+
+  <!-- V1 SCOPE -->
+  <div class="section">
+    <div class="section-label">Section 05</div>
+    <h2>Version One Scope</h2>
+
+    <table>
+      <thead><tr><th>Feature</th><th>Priority</th><th>Complexity</th><th>In V1?</th></tr></thead>
+      <tbody>
+        <tr><td>Gmail ingestion (last 90 days)</td><td><span class="tag tag-p0">P0</span></td><td>Medium</td><td><span class="check">✓ Yes</span></td></tr>
+        <tr><td>AI account summary card</td><td><span class="tag tag-p0">P0</span></td><td>Medium</td><td><span class="check">✓ Yes</span></td></tr>
+        <tr><td>Re-engagement alert queue</td><td><span class="tag tag-p0">P0</span></td><td>Low</td><td><span class="check">✓ Yes</span></td></tr>
+        <tr><td>Account stage tracking</td><td><span class="tag tag-p0">P0</span></td><td>Low</td><td><span class="check">✓ Yes</span></td></tr>
+        <tr><td>Dashboard (list + detail)</td><td><span class="tag tag-p0">P0</span></td><td>Medium</td><td><span class="check">✓ Yes</span></td></tr>
+        <tr><td>AI follow-up draft</td><td><span class="tag tag-p1">P1</span></td><td>Low</td><td><span class="check">✓ Yes</span></td></tr>
+        <tr><td>Weekly pipeline digest</td><td><span class="tag tag-p1">P1</span></td><td>Low</td><td><span class="check">✓ Yes</span></td></tr>
+        <tr><td>Slack ingestion</td><td><span class="tag tag-p2">P2</span></td><td>Medium</td><td><span class="cross">✗ V2</span></td></tr>
+        <tr><td>Multi-owner accounts</td><td><span class="tag tag-p2">P2</span></td><td>High</td><td><span class="cross">✗ V2</span></td></tr>
+        <tr><td>Automated sending</td><td>—</td><td>—</td><td><span class="cross">✗ Never</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SUCCESS METRICS -->
+  <div class="section">
+    <div class="section-label">Section 06</div>
+    <h2>V1 Success Metrics</h2>
+
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-value">80%</div>
+        <div class="metric-label">Target: accounts with AI summary generated in first week</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">48h</div>
+        <div class="metric-label">Target: re-engagement alerts acted on within 48 hours</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">−30%</div>
+        <div class="metric-label">Target: reduction in accounts with 30+ day contact gap</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">4/5</div>
+        <div class="metric-label">Target: user survey score — "AI context felt accurate and useful"</div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <div class="section">
+    <div class="section-label">Risks & Mitigations</div>
+    <h2>Key Risk Register</h2>
+    <table>
+      <thead><tr><th>Risk</th><th>Likelihood</th><th>Mitigation</th></tr></thead>
+      <tbody>
+        <tr><td>AI misreads thread sentiment</td><td>Medium</td><td>Show AI confidence score; human always reviews before acting</td></tr>
+        <tr><td>Email ingestion misses threads</td><td>Low</td><td>Manual note fallback always available</td></tr>
+        <tr><td>Alert fatigue</td><td>High</td><td>User-configurable thresholds; default = weekly digest, not daily</td></tr>
+        <tr><td>Stage classification drift</td><td>Medium</td><td>All stage changes require explicit human confirmation</td></tr>
+        <tr><td>Privacy / email data exposure</td><td>Low</td><td>Process in user's auth context; minimal data retention policy</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<div class="footer">
+  <div class="footer-left">Ajaia CRM Intelligence · PRD V1.0</div>
+  <div class="footer-right">Enterprise AI Product & Automation Fellow · Submission</div>
+</div>
+
+</body>
+</html>
