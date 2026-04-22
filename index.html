@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ajaia CRM Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0f0e0c;
+    --bg: #f7f4ef;
+    --accent: #d4522a;
+    --muted: #7a7468;
+    --border: #ddd9d0;
+    --green: #1a7a4a;
+    --amber: #b85c00;
+    --warm-bg: #d4f0e0;
+    --cool-bg: #fde8da;
+    --cold-bg: #ede0f8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* NAV */
+  #topnav {
+    background: var(--ink); color: white;
+    padding: 0 24px; height: 52px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .nav-left { display: flex; align-items: center; gap: 12px; }
+  .nav-logo { width: 26px; height: 26px; background: var(--accent); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; }
+  .nav-title { font-weight: 700; font-size: 15px; }
+  .nav-badge { font-size: 10px; background: rgba(212,82,42,0.25); color: #ff9f7a; padding: 2px 7px; border-radius: 10px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; }
+  .nav-links { display: flex; gap: 24px; font-size: 13px; }
+  .nav-links span { color: rgba(255,255,255,0.5); cursor: pointer; }
+  .nav-links span.active { color: white; font-weight: 600; }
+
+  /* LAYOUT */
+  #main { flex: 1; display: flex; overflow: hidden; }
+
+  /* LEFT PANEL */
+  #left-panel {
+    width: 320px; flex-shrink: 0;
+    background: #f0ede8; border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  #left-top { padding: 16px 16px 0; }
+  .health-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 14px; }
+  .health-card {
+    background: white; border: 1.5px solid var(--border);
+    border-radius: 8px; padding: 10px 8px; text-align: center; cursor: pointer; transition: all 0.15s;
+  }
+  .health-card:hover { transform: translateY(-1px); }
+  .health-card.active-warm { background: #1a7a4a; border-color: #1a7a4a; }
+  .health-card.active-cooling { background: #d4522a; border-color: #d4522a; }
+  .health-card.active-cold { background: #7c44c0; border-color: #7c44c0; }
+  .health-num { font-family: 'DM Serif Display', serif; font-size: 22px; font-weight: 700; }
+  .health-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
+  .hc-warm .health-num { color: #1a7a4a; } .hc-warm .health-label { color: #1a7a4a; }
+  .hc-cooling .health-num { color: #d4522a; } .hc-cooling .health-label { color: #d4522a; }
+  .hc-cold .health-num { color: #7c44c0; } .hc-cold .health-label { color: #7c44c0; }
+  .health-card.active-warm .health-num, .health-card.active-warm .health-label,
+  .health-card.active-cooling .health-num, .health-card.active-cooling .health-label,
+  .health-card.active-cold .health-num, .health-card.active-cold .health-label { color: white; }
+
+  #search-box {
+    width: 100%; border: 1.5px solid var(--border); border-radius: 7px;
+    padding: 8px 10px 8px 30px; font-size: 13px; background: white;
+    color: var(--ink); outline: none; font-family: inherit; margin-bottom: 12px;
+  }
+  .search-wrap { position: relative; }
+  .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 13px; pointer-events: none; }
+
+  #alerts-strip {
+    margin: 0 16px 12px; background: #fff3ee;
+    border: 1.5px solid #ffcab5; border-radius: 8px; padding: 10px 12px;
+  }
+  .alert-title { font-size: 11px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+  .alert-item { font-size: 12px; color: #2a2824; cursor: pointer; padding: 3px 0; border-bottom: 1px solid rgba(212,82,42,0.1); }
+  .alert-item:last-child { border-bottom: none; }
+  .alert-item:hover { color: var(--accent); }
+
+  #account-list { flex: 1; overflow-y: auto; padding: 0 16px 16px; }
+  .list-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; margin-top: 4px; }
+
+  .account-card {
+    background: white; border: 1.5px solid var(--border);
+    border-radius: 10px; padding: 16px 18px; cursor: pointer;
+    transition: all 0.15s; margin-bottom: 8px;
+  }
+  .account-card:hover { border-color: #bbb; transform: translateX(2px); }
+  .account-card.selected { background: var(--ink); color: white; border-color: var(--ink); }
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+  .card-name { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+  .card-contact { font-size: 12px; color: var(--muted); }
+  .selected .card-contact { color: rgba(255,255,255,0.6); }
+  .priority-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+  .p-high { background: #1a1a1a; color: white; }
+  .p-medium { background: #555; color: white; }
+  .p-low { background: #ddd; color: #444; }
+  .stage-bar { display: flex; gap: 2px; margin-bottom: 10px; }
+  .stage-pip { flex: 1; height: 4px; border-radius: 2px; background: #e5e2db; }
+  .stage-pip.filled { background: var(--accent); }
+  .selected .stage-pip { background: rgba(255,255,255,0.2); }
+  .selected .stage-pip.filled { background: var(--accent); }
+  .card-bottom { display: flex; justify-content: space-between; align-items: center; }
+  .health-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+  .dot-warm { background: #1a7a4a; }
+  .dot-cooling { background: #d4522a; }
+  .dot-cold { background: #7c44c0; }
+  .health-text-warm { color: #1a7a4a; font-size: 12px; font-weight: 500; }
+  .health-text-cooling { color: #d4522a; font-size: 12px; font-weight: 500; }
+  .health-text-cold { color: #7c44c0; font-size: 12px; font-weight: 500; }
+  .selected .health-text-warm, .selected .health-text-cooling, .selected .health-text-cold { color: rgba(255,255,255,0.7); }
+  .last-contact { font-size: 12px; color: var(--muted); }
+  .selected .last-contact { color: rgba(255,255,255,0.5); }
+
+  /* RIGHT PANEL */
+  #right-panel { flex: 1; overflow-y: auto; padding: 32px 36px; }
+
+  /* EMPTY STATE */
+  #empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--muted); }
+  .empty-emoji { font-size: 48px; margin-bottom: 16px; }
+  .empty-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; color: var(--ink); }
+  .empty-sub { font-size: 13px; margin-bottom: 48px; }
+  .stats-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; width: 100%; max-width: 520px; }
+  .stat-card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 20px 16px; text-align: center; }
+  .stat-num { font-family: 'DM Serif Display', serif; font-size: 32px; font-weight: 700; color: var(--accent); }
+  .stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* DETAIL */
+  .detail-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
+  .detail-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .detail-name { font-family: 'DM Serif Display', serif; font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+  .detail-contact { font-size: 14px; color: var(--muted); }
+  .back-btn { background: none; border: 1.5px solid var(--border); border-radius: 6px; padding: 6px 12px; cursor: pointer; font-size: 13px; color: var(--muted); font-family: inherit; }
+  .back-btn:hover { background: white; }
+
+  .quick-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
+  .qs-card { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; }
+  .qs-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+  .qs-value { font-size: 15px; font-weight: 600; }
+
+  .stage-full { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin-bottom: 16px; }
+  .stage-full-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+  .stage-full-bar { display: flex; }
+  .stage-step { flex: 1; text-align: center; }
+  .stage-fill { height: 6px; background: #e5e2db; margin-bottom: 6px; }
+  .stage-step:first-child .stage-fill { border-radius: 4px 0 0 4px; }
+  .stage-step:last-child .stage-fill { border-radius: 0 4px 4px 0; }
+  .stage-fill.filled { background: var(--accent); }
+  .stage-name { font-size: 11px; color: var(--muted); }
+  .stage-name.current { color: var(--accent); font-weight: 700; }
+
+  .suggestion-banner {
+    background: #fff8e7; border: 1.5px solid #f0d070;
+    border-radius: 8px; padding: 14px 18px; margin-bottom: 16px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .suggestion-title { font-size: 12px; font-weight: 700; color: var(--amber); margin-bottom: 2px; }
+  .suggestion-text { font-size: 13px; color: #4a3a00; }
+  .btn-confirm { background: var(--ink); color: white; border: none; border-radius: 6px; padding: 7px 14px; cursor: pointer; font-size: 12px; font-weight: 600; font-family: inherit; margin-right: 8px; }
+  .btn-dismiss { background: white; color: var(--muted); border: 1px solid var(--border); border-radius: 6px; padding: 7px 14px; cursor: pointer; font-size: 12px; font-family: inherit; }
+  .confirmed-banner { background: #d4f0e0; border: 1px solid #b0e8c8; border-radius: 8px; padding: 10px 16px; margin-bottom: 16px; font-size: 13px; color: #1a5c34; }
+
+  .tabs { display: flex; gap: 0; margin-bottom: 20px; border-bottom: 2px solid var(--border); }
+  .tab { background: none; border: none; border-bottom: 2px solid transparent; margin-bottom: -2px; padding: 8px 18px; cursor: pointer; font-size: 13px; font-weight: 400; color: var(--muted); font-family: inherit; }
+  .tab.active { border-bottom-color: var(--accent); color: var(--accent); font-weight: 600; }
+
+  .ai-summary-card { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+  .card-section-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+  .updated { font-size: 11px; color: var(--muted); font-weight: 400; }
+  .summary-text { font-size: 14px; line-height: 1.7; color: #2a2824; }
+
+  .sentiment-card { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+  .sentiment-bar-wrap { display: flex; align-items: center; gap: 10px; }
+  .sentiment-track { flex: 1; height: 6px; background: #eee; border-radius: 3px; overflow: hidden; }
+  .sentiment-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+  .sentiment-score { font-size: 14px; font-weight: 700; min-width: 28px; }
+  .sentiment-sub { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+  .next-action-card { background: #fff8e7; border: 1.5px solid #f0d070; border-radius: 8px; padding: 18px 20px; margin-bottom: 16px; }
+  .next-action-label { font-size: 11px; color: var(--amber); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; margin-bottom: 8px; }
+  .next-action-text { font-size: 14px; color: #2a1a00; line-height: 1.6; }
+
+  .tags-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; background: #f0f0f0; color: #444; border: 1px solid rgba(0,0,0,0.08); }
+
+  .draft-card { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+  .draft-review-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; background: #fde8da; color: #8c3010; }
+  #draft-textarea {
+    width: 100%; min-height: 140px; border: 1.5px solid #e5e2db;
+    border-radius: 6px; padding: 14px; font-size: 14px; line-height: 1.7;
+    color: var(--ink); font-family: inherit; resize: vertical; background: #fdfcfa;
+    margin-top: 14px;
+  }
+  .draft-note { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .draft-actions { display: flex; gap: 10px; margin-top: 0; }
+  .btn-send { background: var(--ink); color: white; border: none; border-radius: 8px; padding: 12px 24px; cursor: pointer; font-size: 14px; font-weight: 600; flex: 1; font-family: inherit; transition: background 0.2s; }
+  .btn-send:hover { background: #333; }
+  .btn-reset { background: white; color: var(--muted); border: 1.5px solid var(--border); border-radius: 8px; padding: 12px 18px; cursor: pointer; font-size: 13px; font-family: inherit; }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div id="topnav">
+  <div class="nav-left">
+    <div class="nav-logo">A</div>
+    <span class="nav-title">Ajaia CRM Intelligence</span>
+    <span class="nav-badge">V1 Prototype</span>
+  </div>
+  <div class="nav-links">
+    <span class="active">Dashboard</span>
+    <span>Accounts</span>
+    <span>Alerts</span>
+    <span>Digest</span>
+  </div>
+</div>
+
+<div id="main">
+  <!-- LEFT -->
+  <div id="left-panel">
+    <div id="left-top">
+      <div class="health-grid">
+        <div class="health-card hc-warm" onclick="filterHealth('warm')" id="hc-warm">
+          <div class="health-num" id="count-warm">3</div>
+          <div class="health-label">Warm</div>
+        </div>
+        <div class="health-card hc-cooling" onclick="filterHealth('cooling')" id="hc-cooling">
+          <div class="health-num" id="count-cooling">1</div>
+          <div class="health-label">Cooling</div>
+        </div>
+        <div class="health-card hc-cold" onclick="filterHealth('cold')" id="hc-cold">
+          <div class="health-num" id="count-cold">1</div>
+          <div class="health-label">Cold</div>
+        </div>
+      </div>
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input id="search-box" placeholder="Search accounts..." oninput="renderList()" />
+      </div>
+    </div>
+
+    <div id="alerts-strip">
+      <div class="alert-title">🔔 2 Re-engagement Alerts</div>
+      <div class="alert-item" onclick="selectAccount(1)">Beacon Capital Group · 18d silent</div>
+      <div class="alert-item" onclick="selectAccount(3)">Axiom Digital Ventures · 34d silent</div>
+    </div>
+
+    <div id="account-list">
+      <div class="list-label" id="list-label">5 Accounts</div>
+      <div id="cards-container"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div id="right-panel">
+    <div id="empty-state">
+      <div class="empty-emoji">👈</div>
+      <div class="empty-title">Select an account</div>
+      <div class="empty-sub">Click any account to view AI insights, sentiment, and follow-up drafts</div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-num">5</div><div class="stat-label">Total Accounts</div></div>
+        <div class="stat-card"><div class="stat-num">2</div><div class="stat-label">Need Re-engagement</div></div>
+        <div class="stat-card"><div class="stat-num">2</div><div class="stat-label">Stage Suggestions</div></div>
+      </div>
+    </div>
+    <div id="detail-view" style="display:none;"></div>
+  </div>
+</div>
+
+<script>
+const ACCOUNTS = [
+  {
+    id: 0, name: "Meridian Health Partners", contact: "Sarah Chen · VP Strategy",
+    stage: "Contracting", stageIndex: 3, lastContact: 3, priority: "High", health: "warm",
+    aiSummary: "Sarah confirmed budget approval in the Nov 14 thread. Legal review is underway on their end — she mentioned their counsel needs 2–3 weeks. Relationship is warm; she asked a personal question about your SF trip.",
+    nextAction: "Follow up on legal timeline — check in without pressure",
+    draftMessage: "Hi Sarah — hope the week's been kind. Just wanted to check in on how the legal review is progressing on your end. No rush at all, just want to make sure we're set for a smooth close. Let me know if there's anything we can do to help move things along!",
+    threads: 12, sentiment: 88, stageSuggestion: "Active Client", tags: ["Healthcare","Q4 Close"]
+  },
+  {
+    id: 1, name: "Beacon Capital Group", contact: "Marcus Webb · Managing Director",
+    stage: "Proposal", stageIndex: 2, lastContact: 18, priority: "High", health: "cooling",
+    aiSummary: "Last meaningful exchange was 18 days ago when Marcus requested the revised scope doc. He opened it (read receipt confirmed) but hasn't responded. Prior to that, two strong calls where he mentioned Q1 budget approval.",
+    nextAction: "Re-engage with a value-add touchpoint — not a direct follow-up ask",
+    draftMessage: "Hi Marcus — I came across this piece on LP portfolio optimization that felt relevant given what you shared about your Q1 priorities. Thought it might be useful context. Would love to reconnect whenever timing works for you.",
+    threads: 8, sentiment: 52, stageSuggestion: null, tags: ["FinServ","At Risk"]
+  },
+  {
+    id: 2, name: "Thornfield Manufacturing", contact: "Elena Rossi · COO",
+    stage: "Active Client", stageIndex: 4, lastContact: 7, priority: "Medium", health: "warm",
+    aiSummary: "Ongoing engagement — last call was productive. Elena flagged a potential expansion opportunity into their European ops division. She mentioned wanting to introduce us to their EMEA lead in January.",
+    nextAction: "Schedule January intro call with EMEA lead",
+    draftMessage: "Hi Elena — following up on our last conversation. You mentioned potentially introducing us to your EMEA lead in January — would love to get something on the calendar before the holidays get busy.",
+    threads: 31, sentiment: 94, stageSuggestion: null, tags: ["Manufacturing","Expansion"]
+  },
+  {
+    id: 3, name: "Axiom Digital Ventures", contact: "Priya Nair · Head of Partnerships",
+    stage: "Qualified", stageIndex: 1, lastContact: 34, priority: "Medium", health: "cold",
+    aiSummary: "Initial discovery call in October went well — Priya was enthusiastic. She said she'd 'loop in her CEO after the board meeting.' No contact since. 34 days of silence. The original interest was genuine; the delay is likely internal prioritization.",
+    nextAction: "Re-engage with light touch — acknowledge the gap, reference original conversation",
+    draftMessage: "Hi Priya — I know Q4 tends to be a blur. I've been thinking about the conversation we had in October and the alignment you mentioned around your 2025 partnership goals. Would love to reconnect when you surface for air.",
+    threads: 3, sentiment: 34, stageSuggestion: null, tags: ["Tech","Re-engage"]
+  },
+  {
+    id: 4, name: "Harrow & Associates", contact: "David Harrow · Founding Partner",
+    stage: "Prospect", stageIndex: 0, lastContact: 2, priority: "Low", health: "warm",
+    aiSummary: "Warm intro from Elena (Thornfield) last week. Initial email exchange very positive — David is curious but early stage. He mentioned reviewing our website and having 'a few questions.'",
+    nextAction: "Schedule introductory call — David expressed interest",
+    draftMessage: "Hi David — great connecting via Elena. I'd love to learn more about where you're focused and share a bit about what we've been working on. Would a 30-minute intro call this week or next work for you?",
+    threads: 2, sentiment: 76, stageSuggestion: "Qualified", tags: ["Consulting","New"]
+  }
+];
+
+const STAGES = ["Prospect","Qualified","Proposal","Contracting","Active Client"];
+const HEALTH_COLORS = { warm: "#1a7a4a", cooling: "#d4522a", cold: "#7c44c0" };
+const HEALTH_LABELS = { warm: "Warm", cooling: "Cooling", cold: "Cold" };
+
+let selectedId = null;
+let healthFilter = null;
+let confirmedStages = {};
+let dismissedStages = {};
+let draftEdits = {};
+
+function selectAccount(id) {
+  selectedId = id;
+  renderList();
+  renderDetail();
+}
+
+function filterHealth(h) {
+  healthFilter = healthFilter === h ? null : h;
+  ['warm','cooling','cold'].forEach(x => {
+    const el = document.getElementById('hc-' + x);
+    el.className = 'health-card hc-' + x + (healthFilter === x ? ' active-' + x : '');
+  });
+  renderList();
+}
+
+function getFiltered() {
+  const search = document.getElementById('search-box').value.toLowerCase();
+  return ACCOUNTS.filter(a => {
+    if (healthFilter && a.health !== healthFilter) return false;
+    if (search && !a.name.toLowerCase().includes(search) && !a.contact.toLowerCase().includes(search)) return false;
+    return true;
+  });
+}
+
+function renderList() {
+  const filtered = getFiltered();
+  document.getElementById('list-label').textContent = filtered.length + ' Account' + (filtered.length !== 1 ? 's' : '');
+  const container = document.getElementById('cards-container');
+  container.innerHTML = filtered.map(a => {
+    const pipHTML = STAGES.map((s,i) => `<div class="stage-pip${i <= a.stageIndex ? ' filled' : ''}"></div>`).join('');
+    const dotClass = 'dot-' + a.health;
+    const textClass = 'health-text-' + a.health;
+    const pClass = 'p-' + a.priority.toLowerCase();
+    const isSelected = selectedId === a.id;
+    return `<div class="account-card${isSelected ? ' selected' : ''}" onclick="selectAccount(${a.id})">
+      <div class="card-top">
+        <div>
+          <div class="card-name">${a.name}</div>
+          <div class="card-contact">${a.contact}</div>
+        </div>
+        <span class="priority-tag ${pClass}">${a.priority}</span>
+      </div>
+      <div class="stage-bar">${pipHTML}</div>
+      <div class="card-bottom">
+        <div>
+          <span class="health-dot ${dotClass}"></span>
+          <span class="${textClass}">${HEALTH_LABELS[a.health]}</span>
+        </div>
+        <span class="last-contact">${a.lastContact === 0 ? 'Today' : a.lastContact + 'd ago'}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function getSentimentColor(v) {
+  return v >= 75 ? '#1a7a4a' : v >= 50 ? '#b85c00' : '#7c44c0';
+}
+
+let currentTab = 'overview';
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.getElementById('tab-overview').style.display = tab === 'overview' ? 'block' : 'none';
+  document.getElementById('tab-draft').style.display = tab === 'draft' ? 'block' : 'none';
+}
+
+function confirmStage(id) {
+  confirmedStages[id] = true;
+  document.getElementById('suggestion-banner-' + id).style.display = 'none';
+  const a = ACCOUNTS[id];
+  document.getElementById('confirmed-banner-' + id).style.display = 'block';
+  document.getElementById('confirmed-banner-' + id).textContent = '✓ Stage updated to ' + a.stageSuggestion;
+}
+
+function dismissStage(id) {
+  dismissedStages[id] = true;
+  document.getElementById('suggestion-banner-' + id).style.display = 'none';
+}
+
+function resetDraft(id) {
+  const a = ACCOUNTS[id];
+  delete draftEdits[id];
+  document.getElementById('draft-textarea').value = a.draftMessage;
+}
+
+function saveDraft(id) {
+  draftEdits[id] = document.getElementById('draft-textarea').value;
+}
+
+function sendDraft(id) {
+  const btn = document.getElementById('send-btn-' + id);
+  btn.textContent = '✓ Marked as Sent';
+  setTimeout(() => { btn.textContent = 'Open in Email Client →'; }, 3000);
+}
+
+function renderDetail() {
+  const empty = document.getElementById('empty-state');
+  const detail = document.getElementById('detail-view');
+  if (selectedId === null) { empty.style.display = 'flex'; detail.style.display = 'none'; return; }
+  empty.style.display = 'none'; detail.style.display = 'block';
+  const a = ACCOUNTS[selectedId];
+  const sentColor = getSentimentColor(a.sentiment);
+  const showSuggestion = a.stageSuggestion && !confirmedStages[a.id] && !dismissedStages[a.id];
+  const draftVal = draftEdits[a.id] !== undefined ? draftEdits[a.id] : a.draftMessage;
+
+  const stageHTML = STAGES.map((s,i) => `
+    <div class="stage-step">
+      <div class="stage-fill${i <= a.stageIndex ? ' filled' : ''}"></div>
+      <div class="stage-name${i === a.stageIndex ? ' current' : ''}">${s}</div>
+    </div>`).join('');
+
+  detail.innerHTML = `
+    <div class="detail-header">
+      <div>
+        <div class="detail-label">Account Detail</div>
+        <div class="detail-name">${a.name}</div>
+        <div class="detail-contact">${a.contact}</div>
+      </div>
+      <button class="back-btn" onclick="closeDetail()">← Back</button>
+    </div>
+
+    <div class="quick-stats">
+      <div class="qs-card"><div class="qs-label">Stage</div><div class="qs-value">${a.stage}</div></div>
+      <div class="qs-card"><div class="qs-label">Last Contact</div><div class="qs-value">${a.lastContact === 0 ? 'Today' : a.lastContact + ' days ago'}</div></div>
+      <div class="qs-card"><div class="qs-label">Threads</div><div class="qs-value">${a.threads}</div></div>
+      <div class="qs-card"><div class="qs-label">Health</div><div class="qs-value" style="color:${HEALTH_COLORS[a.health]}">${HEALTH_LABELS[a.health]}</div></div>
+    </div>
+
+    <div class="stage-full">
+      <div class="stage-full-label">Pipeline Stage</div>
+      <div class="stage-full-bar">${stageHTML}</div>
+    </div>
+
+    <div id="suggestion-banner-${a.id}" class="suggestion-banner" style="display:${showSuggestion ? 'flex' : 'none'}">
+      <div>
+        <div class="suggestion-title">🤖 AI Stage Suggestion</div>
+        <div class="suggestion-text">Conversation signals suggest advancing to <strong>${a.stageSuggestion}</strong></div>
+      </div>
+      <div>
+        <button class="btn-confirm" onclick="confirmStage(${a.id})">Confirm</button>
+        <button class="btn-dismiss" onclick="dismissStage(${a.id})">Dismiss</button>
+      </div>
+    </div>
+    <div id="confirmed-banner-${a.id}" class="confirmed-banner" style="display:${confirmedStages[a.id] ? 'block' : 'none'}"></div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="overview" onclick="switchTab('overview')">AI Overview</button>
+      <button class="tab" data-tab="draft" onclick="switchTab('draft')">Follow-up Draft</button>
+    </div>
+
+    <div id="tab-overview">
+      <div class="ai-summary-card">
+        <div class="card-section-label">🤖 AI Relationship Summary <span class="updated">Updated 2h ago</span></div>
+        <div class="summary-text">${a.aiSummary}</div>
+      </div>
+      <div class="sentiment-card">
+        <div class="card-section-label">Relationship Sentiment Score</div>
+        <div class="sentiment-bar-wrap">
+          <div class="sentiment-track"><div class="sentiment-fill" style="width:${a.sentiment}%;background:${sentColor}"></div></div>
+          <span class="sentiment-score" style="color:${sentColor}">${a.sentiment}</span>
+        </div>
+        <div class="sentiment-sub">Based on ${a.threads} analyzed email threads</div>
+      </div>
+      <div class="next-action-card">
+        <div class="next-action-label">Suggested Next Action</div>
+        <div class="next-action-text">${a.nextAction}</div>
+      </div>
+      <div class="tags-row">${a.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
+    </div>
+
+    <div id="tab-draft" style="display:none">
+      <div class="draft-card">
+        <div class="card-section-label">🤖 AI-Drafted Message <span class="draft-review-tag">Review before sending</span></div>
+        <textarea id="draft-textarea" oninput="saveDraft(${a.id})">${draftVal}</textarea>
+        <div class="draft-note">✏️ Edit this draft before sending. AI never sends on your behalf.</div>
+      </div>
+      <div class="draft-actions">
+        <button class="btn-send" id="send-btn-${a.id}" onclick="sendDraft(${a.id})">Open in Email Client →</button>
+        <button class="btn-reset" onclick="resetDraft(${a.id})">Reset Draft</button>
+      </div>
+    </div>
+  `;
+  currentTab = 'overview';
+}
+
+function closeDetail() {
+  selectedId = null;
+  renderList();
+  document.getElementById('empty-state').style.display = 'flex';
+  document.getElementById('detail-view').style.display = 'none';
+}
+
+// Init
+renderList();
+</script>
+</body>
+</html>
